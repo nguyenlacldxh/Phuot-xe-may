@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Phượt xe máy Việt Nam – Chọn điểm đi, chọn xe, lên đường</title>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#EEF1EC;--card:#fff;--ink:#1F2629;--muted:#5D6A6E;--line:#D3DAD5;--sea:#BFDDE0;--land:#D9E6C9;--road:#9AA79D;--accent:#E4600F;--accent2:#1C6B63;--on-acc:#fff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101619;--card:#182226;--ink:#ECF0EE;--muted:#9FB0B0;--line:#2C3C40;--sea:#13262C;--land:#22352B;--road:#4C625B;--accent:#FF8A3D;--accent2:#5FC4B8;--on-acc:#1B1208}}
+:root[data-theme="dark"]{--bg:#101619;--card:#182226;--ink:#ECF0EE;--muted:#9FB0B0;--line:#2C3C40;--sea:#13262C;--land:#22352B;--road:#4C625B;--accent:#FF8A3D;--accent2:#5FC4B8;--on-acc:#1B1208}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Lexend,system-ui,sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding:0 18px}
+header{padding:36px 0 18px}
+h1{margin:0;font-size:clamp(1.9rem,5vw,3rem);line-height:1.1;font-weight:700;letter-spacing:-.02em}
+header p{margin:10px 0 0;color:var(--muted);max-width:56ch}
+.app{display:grid;grid-template-columns:minmax(0,330px) minmax(0,1fr);gap:20px;padding-bottom:36px}
+@media (max-width:760px){.app{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+.mapcard{padding:8px;position:sticky;top:env(safe-area-inset-top,0px);align-self:start}
+@media (max-width:760px){.mapcard{position:static}}
+svg.map{width:100%;max-height:78vh;display:block;border-radius:10px;background:var(--sea)}
+.land{fill:var(--land);stroke:var(--road);stroke-width:1}
+.rd{fill:none;stroke:var(--road);stroke-width:1.6;stroke-dasharray:4 3}
+.rt{fill:none;stroke:var(--accent);stroke-width:4;stroke-linecap:round;stroke-linejoin:round;opacity:.28}
+.tr{fill:none;stroke:var(--accent);stroke-width:4.5;stroke-linecap:round;stroke-linejoin:round}
+.pin{cursor:pointer}
+.pin circle{fill:var(--card);stroke:var(--accent2);stroke-width:2.5}
+.pin.on circle{fill:var(--accent);stroke:var(--card)}
+.pin text{font-size:11.5px;fill:var(--ink);font-weight:500;paint-order:stroke;stroke:var(--land);stroke-width:3px}
+.rider{font-size:22px;pointer-events:none}
+h2{font-size:1.05rem;margin:0 0 10px;font-weight:600}
+.panel{display:grid;gap:14px;align-content:start}
+.sel{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label.f{display:grid;gap:4px;font-size:.85rem;color:var(--muted)}
+select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px}
+.vs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.v{font:inherit;color:var(--ink);text-align:left;background:var(--bg);border:2px solid var(--line);border-radius:12px;padding:10px 12px;cursor:pointer}
+.v b{display:block;font-weight:600}
+.v small{color:var(--muted)}
+.v[aria-pressed="true"]{border-color:var(--accent);background:var(--card)}
+button:disabled,select:disabled{opacity:.5;cursor:not-allowed}
+:focus-visible{outline:3px solid var(--accent2);outline-offset:2px}
+.sum{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;font-size:.92rem}
+.sum div{background:var(--bg);border-radius:10px;padding:8px 10px}
+.sum b{display:block;font-size:1.15rem}
+.go{font:inherit;font-weight:600;background:var(--accent);color:var(--on-acc);border:0;border-radius:12px;padding:13px 20px;cursor:pointer}
+.go.alt{background:transparent;color:var(--ink);border:1px solid var(--line);font-weight:500;padding:10px 14px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.bar{height:10px;border-radius:9px;background:var(--bg);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent2);width:100%}
+.hud{display:grid;gap:6px;font-size:.92rem}
+.hud span{color:var(--muted)}
+ul.log{list-style:none;margin:0;padding:0;max-height:190px;overflow:auto;font-size:.9rem}
+ul.log li{padding:5px 0;border-bottom:1px solid var(--line)}
+.note{color:var(--muted);font-size:.82rem}
+footer{padding:0 0 30px;color:var(--muted);font-size:.82rem}
+</style>
+</head>
+<body>
+<header class="wrap">
+<h1>Phượt xe máy Việt Nam</h1>
+<p>Chọn nơi xuất phát và nơi đến, chọn loại xe, rồi bấm lên đường để xem chuyến đi diễn ra trên bản đồ, kèm điểm nghỉ chân và đổ xăng.</p>
+</header>
+
+<main class="wrap app">
+<div class="card mapcard">
+<svg class="map" id="map" viewBox="0 0 380 680" role="img" aria-label="Bản đồ Việt Nam. Bấm vào địa danh để chọn điểm đi và điểm đến"></svg>
+</div>
+
+<div class="panel">
+<div class="card">
+<h2>1. Chọn điểm đi và điểm đến</h2>
+<div class="sel">
+<label class="f">Xuất phát từ<select id="from"></select></label>
+<label class="f">Điểm đến<select id="to"></select></label>
+</div>
+<p class="note" style="margin:8px 0 0">Bạn cũng có thể bấm trực tiếp vào các điểm trên bản đồ.</p>
+</div>
+
+<div class="card">
+<h2>2. Chọn loại xe</h2>
+<div class="vs" id="vs"></div>
+</div>
+
+<div class="card">
+<h2>3. Kế hoạch chuyến đi</h2>
+<div id="empty" class="note">Hãy chọn điểm đi, điểm đến khác nhau và một loại xe.</div>
+<div id="plan" hidden>
+<p id="via" style="margin:0 0 10px"></p>
+<div class="sum" id="sum"></div>
+<p class="note" id="adv" style="margin:10px 0 0"></p>
+</div>
+<div class="row" style="margin-top:12px">
+<button class="go" id="go" disabled>Lên đường</button>
+<button class="go alt" id="pause" disabled>Tạm dừng</button>
+<button class="go alt" id="spd" disabled aria-label="Tốc độ mô phỏng">Tốc độ x1</button>
+</div>
+</div>
+
+<div class="card" id="hudc" hidden>
+<h2>Đang di chuyển</h2>
+<div class="hud">
+<div id="h1"></div>
+<div><span>Nhiên liệu / pin</span><div class="bar"><i id="fuel"></i></div></div>
+</div>
+<p class="note" id="photo" style="margin:10px 0"></p>
+<ul class="log" id="log" aria-live="polite"></ul>
+</div>
+</div>
+</main>
+<footer class="wrap">Quãng đường, thời gian và chi phí chỉ là ước tính tham khảo (giá xăng giả định 22.000đ/lít). Hãy kiểm tra thời tiết và tình trạng đường trước khi đi, luôn đội mũ bảo hiểm và nghỉ ngơi đủ.</footer>
+
+<script>
+var $=function(i){return document.getElementById(i)},NS="http://www.w3.org/2000/svg";
+var P=[
+["hg","Hà Giang",104.98,22.82,"r",0],["sp","Sa Pa",103.84,22.34,"l",0],["hn","Hà Nội",105.85,21.03,"l",0],["hl","Hạ Long",107.08,20.95,"r",0],
+["nb","Ninh Bình",105.97,20.25,"l",0],["pn","Phong Nha",106.28,17.59,"l",0],["hu","Huế",107.59,16.46,"r",0],["dn","Đà Nẵng",108.2,16.05,"r",-4],
+["ha","Hội An",108.33,15.88,"r",11],["nt","Nha Trang",109.19,12.24,"r",0],["dl","Đà Lạt",108.44,11.94,"l",0],["hc","TP. Hồ Chí Minh",106.7,10.78,"r",4],["ct","Cần Thơ",105.78,10.03,"l",0]];
+var E=[["hg","hn",320,[[105.2,21.82]]],["sp","hn",320,[[103.97,22.48]]],["hn","hl",160,[]],["hn","nb",95,[]],["nb","pn",340,[[105.68,18.68]]],["pn","hu",230,[]],["hu","dn",100,[[108.12,16.2]]],["dn","ha",30,[]],
+["dn","nt",530,[[109.0,14.6],[109.22,13.78]]],["nt","dl",140,[]],["nt","hc",430,[[108.1,10.93]]],["dl","hc",310,[[107.8,11.55]]],["hc","ct",170,[]]];
+var V=[
+{id:"so",n:"Xe số",e:"Wave, Sirius",s:45,l:1.9,t:4,i:"🏍️"},
+{id:"ga",n:"Xe tay ga",e:"Vision, Lead",s:45,l:2.1,t:5.5,i:"🛵"},
+{id:"con",n:"Xe côn tay",e:"Exciter, Winner",s:50,l:2.4,t:5,i:"🏍️"},
+{id:"pkl",n:"Phân khối lớn",e:"Rebel 300, Himalayan",s:55,l:3.6,t:12,i:"🏍️"},
+{id:"dien",n:"Xe điện",e:"VinFast Klara, Evo",s:35,r:80,i:"🛵"}];
+V.forEach(function(v){v.range=v.r||v.t/v.l*100});
+var OUT=[[102.2,22.4],[102.6,21.5],[103.6,21.0],[104.2,20.2],[104.6,19.4],[105.2,18.7],[105.8,17.9],[106.5,17.1],[107.2,16.4],[107.5,15.4],[107.5,14.3],[107.6,13.5],[107.4,12.4],[106.8,11.8],[106.0,11.7],[105.4,11.6],[105.0,11.0],[104.5,10.4],[104.8,9.7],[104.8,8.7],[105.3,8.7],[105.9,9.2],[106.5,9.6],[107.0,10.3],[107.8,10.7],[108.8,11.2],[109.2,11.8],[109.3,12.8],[109.2,13.7],[109.0,14.5],[108.7,15.3],[108.2,16.1],[107.6,16.5],[107.0,17.0],[106.5,17.8],[106.0,18.7],[105.8,19.3],[106.2,19.9],[106.6,20.5],[107.1,20.9],[107.9,21.4],[107.3,21.8],[106.7,22.0],[106.0,22.7],[105.0,23.3],[104.2,22.8],[103.4,22.5],[102.5,22.7]];
+function pr(p){return[(p[0]-102)*44+10,(23.6-p[1])*44]}
+var C={},adj={};
+P.forEach(function(p){C[p[0]]={id:p[0],n:p[1],xy:pr([p[2],p[3]]),a:p[4],dy:p[5]};adj[p[0]]=[]});
+E.forEach(function(e){var A=C[e[0]].xy,B=C[e[1]].xy,mid=e[3].map(pr);var f=[A].concat(mid,[B]);
+adj[e[0]].push({to:e[1],km:e[2],pts:f});adj[e[1]].push({to:e[0],km:e[2],pts:f.slice().reverse()})});
+/* Bản đồ */
+var map=$("map"),sv="";
+function el(t,a,p){var x=document.createElementNS(NS,t);for(var k in a)x.setAttribute(k,a[k]);(p||map).appendChild(x);return x}
+el("polygon",{points:OUT.map(function(p){return pr(p).join(",")}).join(" "),class:"land"});
+E.forEach(function(e){el("polyline",{points:adj[e[0]].filter(function(x){return x.to==e[1]})[0].pts.join(" "),class:"rd"})});
+var rt=el("polyline",{class:"rt",points:""}),tr=el("polyline",{class:"tr",points:""});
+var pins={};
+P.forEach(function(p){var c=C[p[0]],g=el("g",{class:"pin",tabindex:0,role:"button","aria-label":c.n});
+el("circle",{cx:c.xy[0],cy:c.xy[1],r:6.5},g);
+var t=el("text",{x:c.xy[0]+(c.a=="r"?11:-11),y:c.xy[1]+4+c.dy,"text-anchor":c.a=="r"?"start":"end"},g);t.textContent=c.n;
+g.onclick=function(){pick(p[0])};g.onkeydown=function(e){if(e.key=="Enter"||e.key==" "){e.preventDefault();pick(p[0])}};pins[p[0]]=g});
+var rider=el("text",{class:"rider","text-anchor":"middle",x:-99,y:-99});rider.textContent="🏍️";
+/* Chọn */
+var from="",to="",veh=null,R=null,busy=false;
+["from","to"].forEach(function(id){var s=$(id);s.innerHTML='<option value="">Chọn địa danh</option>'+P.map(function(p){return'<option value="'+p[0]+'">'+p[1]+"</option>"}).join("");
+s.onchange=function(){from=$("from").value;to=$("to").value;upd()}});
+function pick(id){if(busy)return;if(!from||(from&&to)){from=id;to=""}else if(id!==from){to=id}$("from").value=from;$("to").value=to;upd()}
+$("vs").innerHTML=V.map(function(v){return'<button class="v" data-id="'+v.id+'" aria-pressed="false"><b>'+v.i+" "+v.n+"</b><small>"+v.e+"</small></button>"}).join("");
+$("vs").onclick=function(e){var b=e.target.closest(".v");if(!b||busy)return;veh=V.filter(function(v){return v.id==b.dataset.id})[0];
+document.querySelectorAll(".v").forEach(function(x){x.setAttribute("aria-pressed",x===b)});upd()};
+/* Tìm đường */
+function route(a,b){var d={},prev={},q=Object.keys(C),i;q.forEach(function(k){d[k]=1e9});d[a]=0;
+while(q.length){q.sort(function(x,y){return d[x]-d[y]});var u=q.shift();if(u==b)break;adj[u].forEach(function(e){if(d[u]+e.km<d[e.to]){d[e.to]=d[u]+e.km;prev[e.to]={from:u,e:e}}})}
+var es=[],c=b;while(c!=a){es.unshift({a:prev[c].from,b:c,km:prev[c].e.km,pts:prev[c].e.pts});c=prev[c].from}return{edges:es,total:d[b]}}
+function fmt(h){var m=Math.round(h*60);return Math.floor(m/60)+" giờ "+("0"+m%60).slice(-2)+" phút"}
+function money(n){return Math.round(n/1000).toLocaleString("vi-VN")+".000đ"}
+function upd(){for(var k in pins)pins[k].classList.toggle("on",k==from||k==to);
+R=(from&&to&&from!=to)?route(from,to):null;
+rt.setAttribute("points",R?[].concat.apply([],R.edges.map(function(e){return e.pts})).join(" "):"");tr.setAttribute("points","");rider.setAttribute("x",-99);
+if(veh)rider.textContent=veh.i;
+$("plan").hidden=!(R&&veh);$("empty").hidden=!!(R&&veh);$("go").disabled=!(R&&veh);
+if(!(R&&veh))return;
+var n=R.edges.length,km=R.total,rest=Math.max(0,Math.ceil(km/100)-1),use=veh.range*.85,rf=Math.max(0,Math.ceil(km/use)-1);
+var hrs=km/veh.s+rest*.25+rf*(veh.r?.7:.2),cost=veh.r?km*350:km*veh.l/100*22000;
+$("via").textContent="Lộ trình: "+[C[R.edges[0].a].n].concat(R.edges.map(function(e){return C[e.b].n})).join(" → ");
+$("sum").innerHTML="<div>Quãng đường<b>"+km+" km</b></div><div>Thời gian ước tính<b>"+fmt(hrs)+"</b></div><div>"+(veh.r?"Số lần sạc":"Số lần đổ xăng")+"<b>"+rf+"</b></div><div>Chi phí nhiên liệu<b>~"+money(cost)+"</b></div>";
+$("adv").textContent="Gợi ý: chia thành "+Math.ceil(hrs/8)+" ngày (khoảng 8 giờ mỗi ngày), nghỉ chân sau mỗi 100 km."+(veh.r&&rf>0?" Xe điện cần lên kế hoạch sạc trước vì quãng đường tối đa mỗi lần khoảng "+veh.r+" km.":"")}
+/* Mô phỏng */
+function seg(pts,f){var L=[],T=0,i;for(i=1;i<pts.length;i++){var l=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]);L.push(l);T+=l}
+var g=f*T,o=[pts[0]];for(i=0;i<L.length;i++){if(g<=L[i]){var r=L[i]?g/L[i]:0;o.push([pts[i][0]+(pts[i+1][0]-pts[i][0])*r,pts[i][1]+(pts[i+1][1]-pts[i][1])*r]);return o}g-=L[i];o.push(pts[i+1])}return o}
+var run=null;
+function start(){if(!R||!veh)return;busy=true;var tot=R.total,use=veh.range*.85,ev=[],acc=0;
+R.edges.forEach(function(e,i){acc+=e.km;ev.push({km:acc,t:i==R.edges.length-1?"end":"node",m:C[e.b].n})});
+for(var k=100;k<tot-8;k+=100)ev.push({km:k,t:"rest"});for(k=use;k<tot-10;k+=use)ev.push({km:k,t:"fuel"});
+ev.sort(function(a,b){return a.km-b.km});
+run={km:0,i:0,ev:ev,spd:run?run.spd:1,pause:false,until:0,last:performance.now(),rests:0,fuels:0,tot:tot,use:use};
+$("hudc").hidden=false;$("log").innerHTML="";setPhoto(C[from].n);log("🚦 Xuất phát từ "+C[from].n);
+["from","to"].forEach(function(i){$(i).disabled=true});$("go").disabled=true;$("pause").disabled=false;$("spd").disabled=false;$("pause").textContent="Tạm dừng";
+requestAnimationFrame(tick)}
+function setPhoto(n){var p=$("photo");p.textContent="Ảnh thực tế: ";var a=document.createElement("a");a.href="https://www.google.com/search?tbm=isch&q="+encodeURIComponent(n+" du lịch Việt Nam");a.target="_blank";a.rel="noopener";a.textContent="xem ảnh "+n;p.appendChild(a);p.appendChild(document.createTextNode(" · "));var w=document.createElement("a");w.href="https://vi.wikipedia.org/wiki/"+encodeURIComponent(n.replace(/ /g,"_"));w.target="_blank";w.rel="noopener";w.textContent="đọc về "+n;p.appendChild(w)}
+function log(t){var li=document.createElement("li");li.textContent=t;$("log").insertBefore(li,$("log").firstChild)}
+function tick(now){if(!run)return;var r=run,dt=now-r.last;r.last=now;
+if(!r.pause&&now>=r.until){var dur=7000+r.tot*16;r.km=Math.min(r.tot,r.km+dt/dur*r.tot*r.spd)}
+while(r.ev[r.i]&&r.ev[r.i].km<=r.km){var e=r.ev[r.i++],h=r.km/veh.s+r.rests*.25+r.fuels*.2;
+if(e.t=="node")setPhoto(e.m),log("📍 Qua "+e.m+" ("+Math.round(e.km)+" km)");
+else if(e.t=="rest"){r.rests++;r.until=now+1200/r.spd;log("☕ Nghỉ chân 15 phút sau "+Math.round(e.km)+" km")}
+else if(e.t=="fuel"){r.fuels++;r.until=now+1200/r.spd;log(veh.r?"🔌 Dừng sạc pin tại km "+Math.round(e.km):"⛽ Dừng đổ xăng tại km "+Math.round(e.km))}
+else{setPhoto(e.m);log("🎉 Đã đến "+e.m+"! Tổng thời gian khoảng "+fmt(r.km/veh.s+r.rests*.25+r.fuels*(veh.r?.7:.2)))}}
+var a=0,tp=[],pos=null;for(var j=0;j<R.edges.length;j++){var ed=R.edges[j];if(r.km>=a+ed.km){tp=tp.concat(ed.pts);a+=ed.km;pos=ed.pts[ed.pts.length-1]}else{var s=seg(ed.pts,(r.km-a)/ed.km);tp=tp.concat(s);pos=s[s.length-1];break}}
+pos=pos||R.edges[0].pts[0];tr.setAttribute("points",tp.join(" "));rider.setAttribute("x",pos[0]);rider.setAttribute("y",pos[1]+7);
+var used=r.km%r.use,fp=Math.max(0,100*(1-used/veh.range));$("fuel").style.width=fp+"%";
+$("h1").innerHTML="<span>Đã đi</span> <b>"+Math.round(r.km)+" / "+r.tot+" km</b> · <span>Thời gian</span> <b>"+fmt(r.km/veh.s+r.rests*.25+r.fuels*(veh.r?.7:.2))+"</b>";
+if(r.km>=r.tot){finish();return}requestAnimationFrame(tick)}
+function finish(){busy=false;run.done=true;var s=run.spd;run=null;run={spd:s};["from","to"].forEach(function(i){$(i).disabled=false});$("go").disabled=false;$("go").textContent="Đi lại";$("pause").disabled=true}
+$("go").onclick=start;
+$("pause").onclick=function(){if(!run||!run.ev)return;run.pause=!run.pause;run.last=performance.now();$("pause").textContent=run.pause?"Tiếp tục":"Tạm dừng"};
+$("spd").onclick=function(){var s=(run&&run.spd)||1;s=s==1?2:s==2?4:1;if(run)run.spd=s;$("spd").textContent="Tốc độ x"+s};
+upd();
+</script>
+</body>
+</html>
